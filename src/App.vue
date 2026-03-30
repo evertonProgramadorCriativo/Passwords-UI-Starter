@@ -1,4 +1,6 @@
 <script setup>
+
+// Hook do Vue executado quando o componente é montado
 import { onMounted } from 'vue'
 
 // Composable responsável pelas senhas
@@ -7,17 +9,20 @@ import { usePasswords } from './composables/usePasswords'
 // Composable responsável pelos usuários
 import { useUsers } from './composables/useUsers'
 
-// Composable de permissões (controle de usuário e role)
+// Composable de permissões (controle de usuário e acesso)
 import { usePermissions } from './composables/usePermissions'
 
-// Estados e funções relacionados às senhas
+// Componente de tabela que exibe as senhas
+import PasswordTable from './components/PasswordTable.vue'
+
+// Estados e funções de senhas
 const { passwords, loading, error, fetchPasswords } = usePasswords()
 
-// Estados e funções relacionados aos usuários
+// Estados e funções de usuários
 const { users, fetchUsers } = useUsers()
 
 // Controle de usuário atual e permissões
-const { currentUser, currentRole, canActions, setUser } = usePermissions()
+const { currentUser, canActions, setUser } = usePermissions()
 
 // Ao montar o componente, busca dados em paralelo
 onMounted(async () => {
@@ -26,49 +31,55 @@ onMounted(async () => {
     fetchUsers()      // carrega lista de usuários
   ])
 })
+
 </script>
 
 <template>
-  <main style="padding:20px; font-family:sans-serif">
+  <!-- Container principal da aplicação -->
+  <main style="padding:24px; font-family:sans-serif; background:#F4F4F5; min-height:100vh">
 
-    <!-- Título da página -->
-    <h2>Gerenciamento de Permissões</h2>
+    <!-- Header com título e seleção de usuário -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px">
 
-    <!-- Bloco com informações do usuário atual -->
-    <div style="background:#f4f4f5; padding:14px; border-radius:8px; margin-bottom:20px">
+      <!-- Título da aplicação -->
+      <h2 style="flex:1; color:#00060F">VaultOS</h2>
 
-      <!-- Nome do usuário ativo -->
-      <p>
-        <strong>Usuário ativo:</strong> {{ currentUser.name }}
-      </p>
+      <!-- Botões para trocar o usuário ativo -->
+      <!-- percorre todos os usuários -->
+      <!-- chave única para renderização -->
+      <!-- troca o usuário ao clicar -->
+      <button v-for="u in users" :key="u.id" @click="setUser(u)" :style="{
+        padding: '7px 14px',
+        border: 'none',
+        borderRadius: '6px',
+        cursor: 'pointer',
 
-      <!-- Role do usuário -->
-      <p>
-        <strong>Role:</strong> {{ currentRole }}
-      </p>
+        // destaca o usuário ativo
+        background: u.id === currentUser.id ? '#053A9C' : '#ddd',
+        color: u.id === currentUser.id ? 'white' : '#333',
 
-      <!-- Permissão de ações (admin ou viewer) -->
-      <p>
-        <strong>canActions:</strong>
-
-        <!-- Cor muda dinamicamente baseado na permissão -->
-        <span :style="{ color: canActions ? 'green' : 'red' }">
-          {{ canActions ? 'sim (admin)' : 'não (viewer)' }}
-        </span>
-      </p>
-    </div>
-
-    <!-- Lista de botões para trocar o usuário -->
-    <div style="display:flex; gap:10px">
-      <!-- Percorre todos os usuários -->
-      <button v-for="u in users">
-        <!-- Nome e role do usuário -->
-        {{ u.name }} ({{ u.role }})
+        fontWeight: 'bold',
+        fontSize: '13px'
+      }">
+        {{ u.name }}
       </button>
 
     </div>
 
+    <!-- Estado de carregamento -->
+    <div v-if="loading" style="text-align:center; padding:60px; color:#888">
+      Carregando dados...
+    </div>
 
+    <!-- Estado de erro -->
+    <div v-else-if="error" style="color:red; padding:20px">
+      Erro: {{ error }}
+    </div>
+
+    <!-- Tabela exibida quando os dados carregam -->
+    <!-- lista de senhas -->
+    <!-- permissões do usuário -->
+    <PasswordTable v-else :passwords="passwords" :can-actions="canActions" />
 
   </main>
 </template>
