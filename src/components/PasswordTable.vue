@@ -105,10 +105,32 @@ function formatDate(iso) {
                             Restrito
                         </span>
 
-                        <!-- Caso tenha permissão (ações ainda não implementadas) -->
-                        <span v-else style="color:#888; font-size:12px">
-                            em breve
-                        </span>
+                        <!-- Caso o usuário tenha permissão para ações -->
+                        <div v-else style="display:flex; gap:6px; justify-content:flex-end">
+
+                            <!-- Botão de editar -->
+                            <!-- envia o objeto completo -->
+                            <button @click="$emit('edit', entry)" style="background:none; border:1px solid #ddd; border-radius:6px; padding:5px 8px;
+                                cursor:pointer; font-size:14px" title="Editar">
+                                Editar
+                            </button>
+
+                            <!-- Botão de duplicar -->
+                            <!-- envia apenas o ID -->
+                            <button @click="$emit('duplicate', entry.id)" style="background:none; border:1px solid #ddd; border-radius:6px; padding:5px 8px;
+                                cursor:pointer; font-size:14px" title="Duplicar">
+                                Duplicar
+                            </button>
+
+                            <!-- Botão de excluir -->
+                            <!-- envia apenas o ID -->
+                            <button @click="$emit('delete', entry.id)" style="background:none; border:1px solid #fcc; border-radius:6px; padding:5px 8px;
+                                cursor:pointer; font-size:14px" title="Excluir">
+                                Excluir
+                            </button>
+
+                        </div>
+
 
                     </td>
 

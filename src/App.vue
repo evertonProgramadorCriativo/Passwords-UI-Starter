@@ -15,8 +15,16 @@ import { usePermissions } from './composables/usePermissions'
 // Componente de tabela que exibe as senhas
 import PasswordTable from './components/PasswordTable.vue'
 
-// Estados e funções de senhas
-const { passwords, loading, error, fetchPasswords } = usePasswords()
+// Estados , funções de senhas e funções de ação (CRUD)
+
+const {
+  passwords,
+  loading,
+  error,
+  fetchPasswords,
+  duplicatePassword,
+  deletePassword
+} = usePasswords()
 
 // Estados e funções de usuários
 const { users, fetchUsers } = useUsers()
@@ -42,7 +50,7 @@ onMounted(async () => {
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px">
 
       <!-- Título da aplicação -->
-      <h2 style="flex:1; color:#00060F">VaultOS</h2>
+      <h2 style="flex:1; color:#00060F">Gerenciamento</h2>
 
       <!-- Botões para trocar o usuário ativo -->
       <!-- percorre todos os usuários -->
@@ -79,7 +87,11 @@ onMounted(async () => {
     <!-- Tabela exibida quando os dados carregam -->
     <!-- lista de senhas -->
     <!-- permissões do usuário -->
-    <PasswordTable v-else :passwords="passwords" :can-actions="canActions" />
+    <!-- Evento de edição (ainda mockado) -->
+    <!-- Evento de duplicação -->
+    <!-- Evento de exclusão -->
+    <PasswordTable v-else :passwords="passwords" :can-actions="canActions"
+      @edit="(entry) => console.log('TODO editar:', entry)" @duplicate="duplicatePassword" @delete="deletePassword" />
 
   </main>
 </template>
