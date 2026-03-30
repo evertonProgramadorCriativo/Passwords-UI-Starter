@@ -1,0 +1,18 @@
+ *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:     #053A9C;
+  --black:    #00060F;
+  --white:    #FCFCFC;
+  --platinum: #F4F4F5;
+  --gray:     #e8e8ea;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--platinum);
+  color: var(--black);
+  min-height: 100vh;
+}
+
+button { font-family: inherit; }
