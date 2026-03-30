@@ -1,51 +1,74 @@
 <script setup>
 import { onMounted } from 'vue'
+
+// Composable responsável pelas senhas
 import { usePasswords } from './composables/usePasswords'
+
+// Composable responsável pelos usuários
 import { useUsers } from './composables/useUsers'
 
-// Uso dos composables separação de responsabilidade
-// Um composable é uma função reutilizável no Vue.js
+// Composable de permissões (controle de usuário e role)
+import { usePermissions } from './composables/usePermissions'
+
+// Estados e funções relacionados às senhas
 const { passwords, loading, error, fetchPasswords } = usePasswords()
+
+// Estados e funções relacionados aos usuários
 const { users, fetchUsers } = useUsers()
 
-// Executa ao montar o componente 
-onMounted(async () => {
-  // Executa chamadas em paralelo 
-  await Promise.all([fetchPasswords(), fetchUsers()])
+// Controle de usuário atual e permissões
+const { currentUser, currentRole, canActions, setUser } = usePermissions()
 
-  // visualizar dados carregados
-  console.log(' Senhas:', passwords.value)
-  console.log(' Usuários:', users.value)
+// Ao montar o componente, busca dados em paralelo
+onMounted(async () => {
+  await Promise.all([
+    fetchPasswords(), // carrega lista de senhas
+    fetchUsers()      // carrega lista de usuários
+  ])
 })
 </script>
 
 <template>
   <main style="padding:20px; font-family:sans-serif">
-    <h2>Gerenciador de credenciais-> Teste de carregamento</h2>
 
-    <!-- Estado de carregamento -->
-    <p v-if="loading"> Carregando...</p>
+    <!-- Título da página -->
+    <h2>Gerenciamento de Permissões</h2>
 
-    <!-- Estado de erro -->
-    <p v-else-if="error" style="color:red">
-       Erro: {{ error }}
-    </p>
+    <!-- Bloco com informações do usuário atual -->
+    <div style="background:#f4f4f5; padding:14px; border-radius:8px; margin-bottom:20px">
 
-    <!-- Estado de sucesso -->
-    <div v-else>
-      <!-- Exibe quantidade de credenciais -->
-      <p style="color:green">
-       Total de credenciais   {{ passwords.length }} carregadas
+      <!-- Nome do usuário ativo -->
+      <p>
+        <strong>Usuário ativo:</strong> {{ currentUser.name }}
       </p>
 
-      <!-- Preview dos dados  -->
-      <pre
-        style="background:#f4f4f5; padding:12px; border-radius:8px; font-size:12px"
-      >
-{{
-  JSON.stringify(passwords.slice(0, 2), null, 2)
-}}
-      </pre>
+      <!-- Role do usuário -->
+      <p>
+        <strong>Role:</strong> {{ currentRole }}
+      </p>
+
+      <!-- Permissão de ações (admin ou viewer) -->
+      <p>
+        <strong>canActions:</strong>
+
+        <!-- Cor muda dinamicamente baseado na permissão -->
+        <span :style="{ color: canActions ? 'green' : 'red' }">
+          {{ canActions ? 'sim (admin)' : 'não (viewer)' }}
+        </span>
+      </p>
     </div>
+
+    <!-- Lista de botões para trocar o usuário -->
+    <div style="display:flex; gap:10px">
+      <!-- Percorre todos os usuários -->
+      <button v-for="u in users">
+        <!-- Nome e role do usuário -->
+        {{ u.name }} ({{ u.role }})
+      </button>
+
+    </div>
+
+
+
   </main>
 </template>
