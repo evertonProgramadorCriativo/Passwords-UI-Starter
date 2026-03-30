@@ -17,6 +17,9 @@ import PasswordTable from './components/PasswordTable.vue'
 
 import MfaModal from './components/MfaModal.vue'
 
+
+import PasswordForm from './components/PasswordForm.vue'
+
 // Estados , funções de senhas e funções de ação (CRUD)
 
 const {
@@ -25,10 +28,28 @@ const {
   error,
   fetchPasswords,
   duplicatePassword,
-  deletePassword
+  deletePassword,
+  addPassword,
+  updatePasswor
 } = usePasswords()
 
+const showForm = ref(false)
+const editingEntry = ref(null)
 
+function handleEdit(entry) {
+  editingEntry.value = { ...entry }
+  showForm.value = true
+}
+
+function handleFormSubmit(data) {
+  if (editingEntry.value) {
+    updatePassword(editingEntry.value.id, data)
+  } else {
+    addPassword(data)
+  }
+  showForm.value = false
+  editingEntry.value = null
+}
 // Estados e funções de usuários
 const { users, fetchUsers } = useUsers()
 
@@ -100,7 +121,10 @@ function handleHide(id) {
     <div v-else-if="error" style="color:red; padding:20px">
       Erro: {{ error }}
     </div>
-
+    <button v-if="canActions" @click="editingEntry = null; showForm = true"
+      style="background:#053A9C;color:white;border:none;padding:9px 18px;border-radius:6px;cursor:pointer;font-weight:bold;margin-bottom:16px">
+      + Nova Credencial
+    </button>
     <!-- Tabela exibida quando os dados carregam -->
     <!-- lista de senhas -->
     <!-- permissões do usuário -->
@@ -109,10 +133,11 @@ function handleHide(id) {
     <!-- Evento de exclusão -->
     <PasswordTable :passwords="passwords" :can-actions="canActions" :revealed-ids="revealedIds"
       @reveal="(entry) => mfaTarget = entry" @hide="handleHide" @duplicate="duplicatePassword" @delete="deletePassword"
-      @edit="(e) => console.log('edit:', e)" />
+      @edit="handleEdit" />
 
     <Teleport to="body">
       <MfaModal v-if="mfaTarget" :entry="mfaTarget" @confirm="handleMfaConfirm" @close="mfaTarget = null" />
+      <PasswordForm v-if="showForm" :entry="editingEntry" @submit="handleFormSubmit" @close="showForm = false" />
     </Teleport>
 
   </main>
