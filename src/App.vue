@@ -1,7 +1,7 @@
 <script setup>
 
 // Hook do Vue executado quando o componente é montado
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 // Composable responsável pelas senhas
 import { usePasswords } from './composables/usePasswords'
@@ -15,6 +15,8 @@ import { usePermissions } from './composables/usePermissions'
 // Componente de tabela que exibe as senhas
 import PasswordTable from './components/PasswordTable.vue'
 
+import MfaModal from './components/MfaModal.vue'
+
 // Estados , funções de senhas e funções de ação (CRUD)
 
 const {
@@ -26,11 +28,15 @@ const {
   deletePassword
 } = usePasswords()
 
+
 // Estados e funções de usuários
 const { users, fetchUsers } = useUsers()
 
 // Controle de usuário atual e permissões
 const { currentUser, canActions, setUser } = usePermissions()
+
+const mfaTarget = ref(null)
+const revealedIds = ref(new Set())
 
 // Ao montar o componente, busca dados em paralelo
 onMounted(async () => {
@@ -39,7 +45,18 @@ onMounted(async () => {
     fetchUsers()      // carrega lista de usuários
   ])
 })
+function handleMfaConfirm() {
+  if (mfaTarget.value) {
+    revealedIds.value = new Set([...revealedIds.value, mfaTarget.value.id])
+  }
+  mfaTarget.value = null
+}
 
+function handleHide(id) {
+  const next = new Set(revealedIds.value)
+  next.delete(id)
+  revealedIds.value = next
+}
 </script>
 
 <template>
@@ -90,8 +107,13 @@ onMounted(async () => {
     <!-- Evento de edição (ainda mockado) -->
     <!-- Evento de duplicação -->
     <!-- Evento de exclusão -->
-    <PasswordTable v-else :passwords="passwords" :can-actions="canActions"
-      @edit="(entry) => console.log('TODO editar:', entry)" @duplicate="duplicatePassword" @delete="deletePassword" />
+    <PasswordTable :passwords="passwords" :can-actions="canActions" :revealed-ids="revealedIds"
+      @reveal="(entry) => mfaTarget = entry" @hide="handleHide" @duplicate="duplicatePassword" @delete="deletePassword"
+      @edit="(e) => console.log('edit:', e)" />
+
+    <Teleport to="body">
+      <MfaModal v-if="mfaTarget" :entry="mfaTarget" @confirm="handleMfaConfirm" @close="mfaTarget = null" />
+    </Teleport>
 
   </main>
 </template>

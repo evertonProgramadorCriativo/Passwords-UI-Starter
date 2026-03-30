@@ -91,10 +91,32 @@ function formatDate(iso) {
                         {{ formatDate(entry.last_update) }}
                     </td>
 
-                    <!-- Senha mascarada (não exibida por segurança) -->
-                    <td style="padding:12px 16px; font-family:monospace">
-                        ••••••••
+                    <td style="padding:12px 16px">
+                        <div style="display:flex; align-items:center; gap:8px">
+
+                            <!-- Exibe senha ou mascarado -->
+                            <span style="font-family:monospace; font-size:13px">
+                                {{ revealedIds?.has(entry.id) ? entry.password : '••••••••' }}
+                            </span>
+
+                            <!-- Botão de ação (mostrar/ocultar) -->
+                            <button v-if="canActions" @click="revealedIds?.has(entry.id)
+                                ? $emit('hide', entry.id)
+                                : $emit('reveal', entry)"
+                                style="background:none; border:none; cursor:pointer; font-size:12px; padding:4px; color:#053A9C; text-decoration:underline"
+                                :title="revealedIds?.has(entry.id) ? 'Ocultar senha' : 'Ver senha'">
+                                <!-- Texto no lugar do ícone -->
+                                {{ revealedIds?.has(entry.id) ? 'Ocultar' : 'Ver' }}
+                            </button>
+
+                            <!-- Caso não tenha permissão -->
+                            <span v-else style="font-size:12px; color:#999" title="Sem permissão">
+                                Sem acesso
+                            </span>
+
+                        </div>
                     </td>
+
 
                     <!-- Coluna de ações -->
                     <td style="padding:12px 16px; text-align:right">
@@ -133,6 +155,7 @@ function formatDate(iso) {
 
 
                     </td>
+
 
                 </tr>
             </tbody>
